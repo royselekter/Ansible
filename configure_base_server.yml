@@ -1,0 +1,32 @@
+---
+
+- hosts: clients
+  remote_user: centos
+  become: yes
+
+  tasks:
+    - name: Install NTP
+      yum: name=ntp state=installed
+      tags: ntp
+
+    - name: Add repository
+      yum_repository:
+        name: epel
+        description: EPEL YUM repo
+        baseurl: https://download.fedoraproject.org/pub/epel/$releasever/$basearch/
+
+    - name: copy static file
+      template:
+        src: ntp.conf
+        dest: /etc/ntp.conf
+        mode: 0644
+
+    - name: Restart service ntpd, in all cases
+      service:
+        name: ntpd
+        state: restarted
+
+    - name: Make sure NTP is started up
+      service: name=ntpd state=started enabled=yes
+      tags: ntp
+
